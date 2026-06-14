@@ -16,6 +16,7 @@ describe("parseCliArgs", () => {
   it("extracts --auto-approve without sending it as user input", () => {
     expect(parseCliArgs(["--auto-approve", "edit", "file"])).toEqual({
       autoApprove: true,
+      testCommand: undefined,
       initialInput: "edit file",
     });
   });
@@ -23,6 +24,7 @@ describe("parseCliArgs", () => {
   it("treats -y as an alias for --auto-approve", () => {
     expect(parseCliArgs(["-y", "run", "tests"])).toEqual({
       autoApprove: true,
+      testCommand: undefined,
       initialInput: "run tests",
     });
   });
@@ -30,6 +32,7 @@ describe("parseCliArgs", () => {
   it("keeps autoApprove disabled when the flag is absent", () => {
     expect(parseCliArgs(["hello", "agent"])).toEqual({
       autoApprove: false,
+      testCommand: undefined,
       initialInput: "hello agent",
     });
   });
@@ -37,8 +40,23 @@ describe("parseCliArgs", () => {
   it("returns empty input when only auto-approve is provided", () => {
     expect(parseCliArgs(["--auto-approve"])).toEqual({
       autoApprove: true,
+      testCommand: undefined,
       initialInput: "",
     });
+  });
+
+  it("captures --test-command value without sending it as user input", () => {
+    expect(parseCliArgs(["--test-command", "npm test", "fix", "bug"])).toEqual({
+      autoApprove: false,
+      testCommand: "npm test",
+      initialInput: "fix bug",
+    });
+  });
+
+  it("throws when --test-command has no value", () => {
+    expect(() => parseCliArgs(["--test-command"])).toThrow(
+      /--test-command requires a value/
+    );
   });
 });
 

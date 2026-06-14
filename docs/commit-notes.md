@@ -247,3 +247,11 @@
 - Why: P2-W6 需要开始建立编辑后的自验证能力，但第一步应先交付一个独立、可测试的测试执行器；如果直接接入 Agent Loop，会把命令执行、结果摘要和对话注入耦合在一起，也容易提前声明尚未完成的自修复闭环。
 - What: 新增 `runTests()`，用于在指定工作目录执行测试命令，返回 passed、exitCode、stdout、stderr 和 durationMs；普通测试失败被结构化为失败结果而不是异常，超时统一返回失败结果并保留可读错误。P2 计划同步将 W6-T1 标记为完成，但没有新增配置、没有注册 LLM 工具，也没有接入编辑后自动验证。
 - How: 实现复用 Node `exec` 的 cwd 与 timeout 能力，并提供可选 `timeoutMs` 让超时单测不依赖 60 秒等待；单测覆盖成功、失败、stdout/stderr 保留、超时和非法输入。验证方式为 `npm run build`、`npm test -- tests/verification/test-runner.test.ts` 和全量 `npm test`，确认 18 个测试文件和 141 条测试全部通过。
+
+## wire post-edit test verification into the loop
+
+- commit: wire post-edit test verification into the loop
+- time: 2026-06-14 11:30
+- Why: W6-T1 已交付独立的 `runTests`，但结果还无法被模型感知。本次目标是补齐 W6 自验证闭环（T2 摘要 + T3 接入 + T4 端到端），让 Agent 改完代码后自动跑测试并看到结果，为后续 W7 的重试循环打底；难点在于既要复用 T1 的 `TestResult`，又不能把测试执行硬编码进循环导致单测必须真跑测试。
+- What: 新增 `formatTestResults()` 把 `TestResult` 压成回喂模型的简洁摘要（成功 `All tests passed (N tests in M files, Xs)`、失败列出 `FAIL ... / Expected / Received`、超 2000 字符截断、解析不到时回退原始输出）。`AppConfig` 新增可选 `testCommand`（覆盖 override/`TEST_COMMAND` 环境变量/空值/默认），CLI 新增 `--test-command <cmd>` 接入执行路径。Agent Loop 在每轮工具执行后，若本轮有成功的 `write_file`/`edit_file` 且配置了 `testCommand`，调用可注入的 `testRunner` 并把摘要以 assistant 消息注入对话；未配置则跳过。边界未变：仍未引入 Harness、未实现重试，验证只读不修复。
+- How: `formatTestResults` 用正则解析 vitest 默认 reporter 的 `Test Files` / `Tests` / `Duration` 行与 `FAIL`/`Expected`/`Received`，与输出格式耦合换取实现简单，解析失败时一律回退到截断后的 stdout/stderr 保证模型不会拿到空信息——这是刻意的健壮性兜底。Agent Loop 通过新增的 `testRunner` 默认参数（默认 `runTests`）实现依赖注入，单测注入假 runner 断言①编辑后触发、②结果以 assistant role 注入、③无 testCommand 不触发、④非编辑工具不触发的时序。T4 端到端用临时项目（`add.mjs` 故意写成 `a - b` + 纯 node `check.mjs` 作为 testCommand），避免在临时目录引入 TS 工具链即可真跑测试。验证方式为 `npm run build` 和全量 `npm test`。

@@ -4,7 +4,13 @@ vi.mock("dotenv", () => ({ config: () => ({ parsed: {} }) }));
 
 import { loadConfig } from "../src/config.js";
 
-const ENV_KEYS = ["ARK_API_KEY", "ARK_MODEL", "BASE_URL", "MAX_TURNS"] as const;
+const ENV_KEYS = [
+  "ARK_API_KEY",
+  "ARK_MODEL",
+  "BASE_URL",
+  "MAX_TURNS",
+  "TEST_COMMAND",
+] as const;
 const DEFAULT_BASE_URL = "https://ark.cn-beijing.volces.com/api/v3";
 
 describe("loadConfig", () => {
@@ -37,6 +43,18 @@ describe("loadConfig", () => {
     expect(config.maxTurns).toBe(20);
     expect(config.workingDirectory).toBe(process.cwd());
     expect(config.autoApprove).toBe(false);
+    expect(config.testCommand).toBeUndefined();
+  });
+
+  it("reads TEST_COMMAND from environment and ignores blank values", () => {
+    process.env.ARK_API_KEY = "key-123";
+    process.env.ARK_MODEL = "doubao-test";
+    process.env.TEST_COMMAND = "npm test";
+
+    expect(loadConfig().testCommand).toBe("npm test");
+
+    process.env.TEST_COMMAND = "   ";
+    expect(loadConfig().testCommand).toBeUndefined();
   });
 
   it("reads overridable values from environment", () => {
@@ -80,6 +98,7 @@ describe("loadConfig", () => {
       maxTurns: 99,
       workingDirectory: "/tmp/work",
       autoApprove: true,
+      testCommand: "vitest run",
     });
 
     expect(config.apiKey).toBe("override-key");
@@ -88,5 +107,6 @@ describe("loadConfig", () => {
     expect(config.maxTurns).toBe(99);
     expect(config.workingDirectory).toBe("/tmp/work");
     expect(config.autoApprove).toBe(true);
+    expect(config.testCommand).toBe("vitest run");
   });
 });

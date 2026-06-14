@@ -10,6 +10,8 @@ import { checkPathInSandbox } from "./permissions/sandbox.js";
 import type { ToolRegistry } from "./tools/index.js";
 import type { ToolDefinition } from "./tools/types.js";
 import type { Message } from "./types.js";
+import { formatTestResults } from "./verification/format-results.js";
+import { runTests, type TestResult } from "./verification/test-runner.js";
 
 export interface AgentResult {
   finalMessage: string;
@@ -33,6 +35,10 @@ export type SafetyChecker = (
   input: Record<string, unknown>,
   options: { workingDirectory: string }
 ) => Promise<SafetyDecision>;
+
+export type TestRunner = (command: string, cwd: string) => Promise<TestResult>;
+
+const EDIT_TOOL_NAMES = new Set(["write_file", "edit_file"]);
 
 export async function checkToolSafety(
   tool: ToolDefinition,
@@ -62,7 +68,8 @@ export async function runAgentLoop(
   tools: ToolRegistry,
   client: LLMClient = new LLMClient(config),
   permissionCheck: PermissionChecker = checkToolPermission,
-  safetyCheck: SafetyChecker = checkToolSafety
+  safetyCheck: SafetyChecker = checkToolSafety,
+  testRunner: TestRunner = runTests
 ): Promise<AgentResult> {
   const messages: Message[] = [
     { role: "system", content: SYSTEM_PROMPT },
@@ -75,6 +82,7 @@ export async function runAgentLoop(
 
   for (let turn = 1; turn <= config.maxTurns; turn++) {
     console.log(`[Agent] Turn ${turn}/${config.maxTurns}`);
+    let editedThisTurn = false;
     const response = await client.sendMessage(messages, {
       tools: toolDefinitions,
     });
@@ -135,6 +143,9 @@ export async function runAgentLoop(
         content = result.error
           ? `${result.output}\n[error] ${result.error}`
           : result.output;
+        if (result.error === undefined && EDIT_TOOL_NAMES.has(call.name)) {
+          editedThisTurn = true;
+        }
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
         content = `[error] ${message}`;
@@ -143,6 +154,19 @@ export async function runAgentLoop(
         role: "tool",
         tool_call_id: call.id,
         content,
+      });
+    }
+
+    if (editedThisTurn && config.testCommand !== undefined) {
+      const testResult = await testRunner(
+        config.testCommand,
+        config.workingDirectory
+      );
+      const summary = formatTestResults(testResult);
+      console.log(`[Agent] Ran tests after edit: ${testResult.passed ? "passed" : "failed"}`);
+      messages.push({
+        role: "assistant",
+        content: `[verification] ${summary}`,
       });
     }
   }
