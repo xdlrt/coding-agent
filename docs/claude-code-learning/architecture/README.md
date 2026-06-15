@@ -2,6 +2,26 @@
 
 这里放 Claude Code 的跨模块架构学习笔记。每篇文章应围绕一个架构问题展开：它解决什么场景、如何组织控制流、代价是什么、当前 `coding-agent` 是否需要类似设计。
 
+## 主题地图
+
+```mermaid
+flowchart TD
+  Runtime["运行时闭环"] --> Loop["Agentic Loop"]
+  Runtime --> Tool["Tool Use 协议"]
+  Runtime --> Context["Context / Compact"]
+  Runtime --> Safety["Permission / Safety"]
+  Extension["能力扩展"] --> Skill["Skill 系统"]
+  Extension --> Service["MCP / LSP / API"]
+  Extension --> Plugin["插件系统"]
+  Extension --> SubAgent["Sub-agent"]
+  Product["产品化连接"] --> Bridge["IDE / Remote / Server"]
+  Product --> State["状态 / 记忆 / 配置"]
+  Product --> CLI["CLI / TUI / Session"]
+  Product --> IO["输入输出体验"]
+  Product --> Git["Git / GitHub"]
+  Product --> Obs["Observability / Eval"]
+```
+
 ## 待分析主题
 
 | 主题 | Claude Code 参考 | coding-agent 对照 | 关注点 |

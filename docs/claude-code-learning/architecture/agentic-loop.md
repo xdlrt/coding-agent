@@ -8,6 +8,24 @@
 - 什么情况下应该继续请求模型，什么情况下必须停止？
 - 当前 `coding-agent` 的简化实现保留了哪些关键边界，哪些复杂恢复能力还不适合照搬？
 
+## 架构示意
+
+```mermaid
+flowchart TD
+  Start["用户输入"] --> History["MessageHistory(system + user)"]
+  History --> Turn["for turn = 1..maxTurns"]
+  Turn --> Compress["可选上下文压缩"]
+  Compress --> Request["LLM 请求 + tools schema"]
+  Request --> Parse["解析 assistant tool_calls"]
+  Parse --> Stop{"是否有 tool calls?"}
+  Stop -- 否 --> Done["success=true, no_tool_calls"]
+  Stop -- 是 --> Harness["Harness.executeTool"]
+  Harness --> ToolMsg["追加 role=tool, 使用真实 call.id"]
+  ToolMsg --> Turn
+  Turn --> Max["达到 maxTurns"]
+  Max --> Fail["success=false, max_turns"]
+```
+
 ## Claude Code 设计
 
 Claude Code 的主循环可以理解成一个流式状态机。入口接收消息、系统提示词、用户上下文、工具上下文、权限检查函数和 `maxTurns` 等参数，然后进入 `while (true)` 循环。每轮会构造可发送给模型的上下文，处理 compact、token budget、fallback model、streaming tool execution、stop hooks、附件注入和下一轮状态。

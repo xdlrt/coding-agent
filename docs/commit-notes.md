@@ -431,3 +431,11 @@
 - Why: P6-P10 后续计划最初按 MVP 产品顺序排列，把 TUI 放在 Diff、MCP、Multi-Agent 和配置治理之前；这对产品体验合理，但不符合当前“优先学习 Claude Code 核心框架”的目标。TUI 会消耗大量交互细节成本，而 runtime 内核更能解释 coding agent 的真实复杂度。
 - What: 将 Diff 与验证闭环前置为 P7，把 TUI 后置为 P13；新增 P10 MCP/插件式工具扩展、P11 多 Agent 编排、P12 配置策略治理三份计划。总执行计划同步更新目录、范围、核心模块、里程碑、目标结构和设计决策，明确新增方向是学习版能力，不实现插件市场、完整 MCP 生态、完整远程 swarm 或企业级策略平台。
 - How: 采用重命名未完成计划文件的方式保持路线编号和学习优先级一致；所有新增 checklist 均保持 `[ ]`，避免误标实现状态。计划中特别强调外部工具仍走 Harness、子 Agent 不污染主消息历史、配置治理不得保存密钥。验证方式为旧链接和旧编号 `rg` 检查、新计划完成状态检查以及 `git diff --check`；本次为纯文档规划调整，未运行代码测试。
+
+## add claude code learning site
+
+- commit: add claude code learning site
+- time: 2026-06-15 15:53
+- Why: Claude Code 学习材料已经有入口大纲，但 architecture 和 modules 还缺少成体系的章节内容、可视化表达和可浏览站点；如果继续只用散落 Markdown，读者很难按“跨模块设计问题”和“源码模块职责”两条线建立完整地图，也难以验证 Mermaid 图和路由是否能被文档工具正确渲染。
+- What: 补齐 `docs/claude-code-learning/architecture/` 和 `modules/` 的主题笔记，architecture 聚焦跨模块设计取舍，modules 聚焦类型、接口、执行链路、失败路径和测试证据；所有学习页增加 Mermaid 图示，并新增 Rspress 站点配置、入口页、导航、侧边栏、搜索、Mermaid 渲染和 geek 风全局样式。新增 `docs:dev`、`docs:build`、`docs:preview` 脚本和 Rspress 相关 devDependencies，构建产物输出到被忽略的 `doc_build/claude-code-learning`。
+- How: 以现有 `docs/claude-code-learning/README.md`、`modules/README.md` 和 `module-coverage.md` 为章节清单，逐项映射到实际 Markdown 文件，并用 `<claude-code-snapshot>` 占位保持参考路径不绑定本机。Rspress 接入采用 `@rspress/core` v2，root 指向现有学习目录；Mermaid 用 `rspress-plugin-mermaid` 渲染；`globalStyles` 在 ESM 配置中用 `fileURLToPath(import.meta.url)` 解析绝对路径，避免 Rspress 临时 runtime 把相对 CSS 当成包名。验证方式为 `npm run docs:build`、`npm run build`、本地 `docs:dev` HTTP 200 检查、Mermaid 覆盖扫描、路径/敏感词扫描和 `git diff --check`。
