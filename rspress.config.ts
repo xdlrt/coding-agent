@@ -8,6 +8,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export default defineConfig({
   root: "docs/claude-code-learning",
   outDir: "doc_build/claude-code-learning",
+  base: "/coding-agent/",
   globalStyles: path.join(
     __dirname,
     "docs/claude-code-learning/styles/geek.css"

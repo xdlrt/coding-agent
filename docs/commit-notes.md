@@ -447,3 +447,11 @@
 - Why: Rspress 已经能把 `docs/claude-code-learning` 构建成静态站点，但如果只停留在本地预览，学习材料仍无法通过 GitHub Pages 稳定访问。部署链路需要和现有 PR CI 分开，避免文档站点发布影响主 Agent build/test/eval 的职责边界。
 - What: 新增 GitHub Pages workflow，针对 `docs/claude-code-learning`、Rspress 配置和 package 依赖变化触发；PR 上只执行 `npm run docs:build` 校验，push 到 `main` 或手动触发时上传 `doc_build/claude-code-learning` 并使用官方 Pages action 部署。workflow 使用 Node 22，匹配当前 Rspress 2 的 engine 要求。
 - How: 采用 GitHub 官方 `actions/upload-pages-artifact` 和 `actions/deploy-pages`，权限只开放 `contents: read`、`pages: write`、`id-token: write`；构建产物仍保持在 `.gitignore` 的 `doc_build/` 下，不提交静态文件。验证方式为本地 `npm run docs:build`、workflow 路径和权限审查、`git diff --check`。
+
+## fix pages asset base path
+
+- commit: fix pages asset base path
+- time: 2026-06-15 16:59
+- Why: GitHub Pages 项目站点部署在 `/coding-agent/` 子路径下，Rspress 默认 `base: "/"` 会让 HTML 引用 `/static/...`，导致页面能访问但 CSS/JS 样式资源从域名根路径加载而 404。
+- What: 将 Rspress 配置的 `base` 设置为 `/coding-agent/`，让构建产物中的静态资源和站内链接匹配 `https://xdlrt.github.io/coding-agent/` 这个项目站点路径。
+- How: 只改 Rspress 站点配置，不改变文档内容和 Agent 运行时代码；验证方式为 `npm run docs:build`，并检查生成的 `index.html` 中资源路径包含 `/coding-agent/static/`。
