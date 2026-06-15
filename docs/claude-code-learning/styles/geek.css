@@ -1,0 +1,160 @@
+:root {
+  --rp-c-brand: #00d992;
+  --rp-c-brand-light: #38f5b1;
+  --rp-c-brand-lighter: #9fffd6;
+  --rp-c-brand-dark: #00b97f;
+  --rp-c-brand-darker: #008a61;
+  --rp-c-brand-tint: rgba(0, 217, 146, 0.13);
+  --rp-radius: 6px;
+  --rp-radius-small: 4px;
+  --rp-radius-large: 8px;
+  --rp-shadow-1: 0 0 0 1px rgba(0, 217, 146, 0.08);
+  --rp-shadow-2: 0 8px 30px rgba(0, 0, 0, 0.2);
+  --rp-font-family-mono: "SFMono-Regular", "Cascadia Code", "JetBrains Mono",
+    "Fira Code", Menlo, Consolas, monospace;
+}
+
+:where(html:not(.rp-dark)) {
+  --rp-c-bg: #f8faf7;
+  --rp-c-bg-soft: #eef4ef;
+  --rp-c-bg-mute: #e4ece5;
+  --rp-c-bg-alt: #ffffff;
+  --rp-c-divider: rgba(25, 70, 50, 0.22);
+  --rp-c-divider-light: rgba(25, 70, 50, 0.12);
+  --rp-c-text-0: #0e1f18;
+  --rp-c-text-1: #142820;
+  --rp-c-text-2: rgba(20, 40, 32, 0.72);
+  --rp-c-text-3: rgba(20, 40, 32, 0.44);
+  --rp-c-text-code: #006b4e;
+  --rp-c-text-code-bg: rgba(0, 185, 127, 0.09);
+  --rp-c-text-code-border: rgba(0, 185, 127, 0.16);
+  --rp-code-title-bg: #eaf2ec;
+  --rp-code-block-color: #17382c;
+  --rp-code-block-bg: #f5fbf7;
+  --rp-code-block-border: 1px solid rgba(0, 137, 96, 0.18);
+  --rp-code-block-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.6);
+}
+
+:where(html.rp-dark) {
+  --rp-c-bg: #07110e;
+  --rp-c-bg-soft: #0d1b16;
+  --rp-c-bg-mute: #142720;
+  --rp-c-bg-alt: #050a08;
+  --rp-c-divider: rgba(0, 217, 146, 0.28);
+  --rp-c-divider-light: rgba(0, 217, 146, 0.16);
+  --rp-c-text-0: #eafff6;
+  --rp-c-text-1: #d5f7ea;
+  --rp-c-text-2: rgba(213, 247, 234, 0.75);
+  --rp-c-text-3: rgba(213, 247, 234, 0.46);
+  --rp-c-text-code: #7dffc9;
+  --rp-c-text-code-bg: rgba(0, 217, 146, 0.12);
+  --rp-c-text-code-border: rgba(0, 217, 146, 0.2);
+  --rp-code-title-bg: #0a1712;
+  --rp-code-block-color: #d9ffee;
+  --rp-code-block-bg: #07110e;
+  --rp-code-block-border: 1px solid rgba(0, 217, 146, 0.22);
+  --rp-code-block-shadow: 0 0 0 1px rgba(0, 217, 146, 0.05),
+    0 18px 60px rgba(0, 0, 0, 0.25);
+}
+
+body {
+  background-image:
+    linear-gradient(rgba(0, 217, 146, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 217, 146, 0.035) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+.rp-nav {
+  border-bottom: 1px solid var(--rp-c-divider-light);
+  background: color-mix(in srgb, var(--rp-c-bg) 88%, transparent);
+  backdrop-filter: blur(16px);
+}
+
+.rp-nav__title__link {
+  font-family: var(--rp-font-family-mono);
+  letter-spacing: 0;
+}
+
+.rp-nav__title__link::before {
+  content: "~/";
+  color: var(--rp-c-brand);
+  margin-right: 2px;
+}
+
+.rp-sidebar-item {
+  border: 1px solid transparent;
+  font-family: var(--rp-font-family-mono);
+  font-size: 13px;
+}
+
+.rp-sidebar-item:hover {
+  border-color: var(--rp-c-divider-light);
+}
+
+.rp-sidebar-item--active {
+  border-color: color-mix(in srgb, var(--rp-c-brand) 40%, transparent);
+  box-shadow: inset 2px 0 0 var(--rp-c-brand);
+}
+
+.rp-doc h1,
+.rp-doc h2,
+.rp-doc h3 {
+  letter-spacing: 0;
+}
+
+.rp-doc h1 {
+  font-family: var(--rp-font-family-mono);
+}
+
+.rp-doc h1::before {
+  content: "# ";
+  color: var(--rp-c-brand);
+}
+
+.rp-doc h2::before {
+  content: "## ";
+  color: var(--rp-c-brand);
+  font-family: var(--rp-font-family-mono);
+}
+
+.rp-doc :not(pre) > code {
+  border: 1px solid var(--rp-c-text-code-border);
+  font-size: 0.88em;
+}
+
+.rp-doc pre,
+.rspress-code-content {
+  font-variant-ligatures: contextual;
+}
+
+.rp-doc table {
+  border: 1px solid var(--rp-c-divider-light);
+  box-shadow: var(--rp-shadow-1);
+}
+
+.rp-doc blockquote {
+  border-left-color: var(--rp-c-brand);
+  background: color-mix(in srgb, var(--rp-c-brand) 6%, transparent);
+  padding: 10px 16px;
+}
+
+.mermaid {
+  border: 1px solid var(--rp-c-divider-light);
+  border-radius: var(--rp-radius);
+  background:
+    radial-gradient(circle at top left, rgba(0, 217, 146, 0.12), transparent 34%),
+    var(--rp-c-bg-soft);
+  padding: 16px;
+  overflow: auto;
+}
+
+@media (max-width: 768px) {
+  body {
+    background-size: 24px 24px;
+  }
+
+  .rp-doc h1::before,
+  .rp-doc h2::before {
+    content: "";
+  }
+}
